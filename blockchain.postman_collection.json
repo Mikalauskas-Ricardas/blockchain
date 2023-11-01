@@ -1,0 +1,61 @@
+{
+	"info": {
+		"_postman_id": "04c56d9f-2a13-44d5-9084-af63bed35f79",
+		"name": "blockchain",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "28041348"
+	},
+	"item": [
+		{
+			"name": "is_chain_valid",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{localhost_5000}}/is_chain_valid",
+					"host": [
+						"{{localhost_5000}}"
+					],
+					"path": [
+						"is_chain_valid"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "mine_block",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{localhost_5000}}/mine_block",
+					"host": [
+						"{{localhost_5000}}"
+					],
+					"path": [
+						"mine_block"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_chain",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{localhost_5000}}/get_chain",
+					"host": [
+						"{{localhost_5000}}"
+					],
+					"path": [
+						"get_chain"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
