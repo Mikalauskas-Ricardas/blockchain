@@ -56,6 +56,75 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "connect_nodes",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"nodes\": [\r\n        \"http://127.0.0.1:5000\",\r\n        \"http://127.0.0.1:5001\"\r\n    ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{localhost_5000}}/connect_node",
+					"host": [
+						"{{localhost_5000}}"
+					],
+					"path": [
+						"connect_node"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add_transaction",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"sender\": \"Paco\",\r\n    \"receiver\": \"Ricardas\",\r\n    \"amount\": \"350\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{localhost_5000}}/add_transaction",
+					"host": [
+						"{{localhost_5000}}"
+					],
+					"path": [
+						"add_transaction"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "replace_chain",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{localhost_5000}}/replace_chain",
+					"host": [
+						"{{localhost_5000}}"
+					],
+					"path": [
+						"replace_chain"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }

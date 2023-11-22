@@ -1,22 +1,28 @@
 import datetime
-import time
 import hashlib
 import json
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
+import requests
+from uuid import uuid4
+from urllib.parse import urlparse
 
 class Blockchain:
     def __init__(self) -> None:
         self.chain = []
+        self.transactions = []
         self.create_block(proof = 1, previous_hash = '0')
+        self.nodes = set()
 
     def create_block(self, proof, previous_hash):
         block = {
             'index': len(self.chain) + 1,
             'timestamp': str(datetime.datetime.now()),
             'proof': proof,
-            'previous_hash': previous_hash
+            'previous_hash': previous_hash,
+            'transactions': self.transactions
         }
 
+        self.transactions = []
         self.chain.append(block)
         return block
     
@@ -56,9 +62,41 @@ class Blockchain:
             previous_block = block
             block_index += 1
         return True
+    
+    def add_transaction(self, sender, receiver, amount):
+        self.transactions.append({
+            'sender': sender,
+            'receiver': receiver,
+            'amount': amount
+        })
+        previous_block = self.get_previous_block()
+        return previous_block['index'] + 1
+    
+    def add_node(self, address):
+        parsed_url = urlparse(address)
+        self.nodes.add(parsed_url.netloc)
 
+    def replace_chain(self):
+        network = self.nodes
+        longest_chain = None
+        max_length = len(self.chain)
+        for nodes in network:
+            response = requests.get(f'http://{nodes}/get_chain')
+            if response.status_code == 200:
+                currentNodeLength = response.json()['length']
+                currentNodeChain = response.json()['length']
+                if currentNodeLength > max_length and self.is_chain_valid(currentNodeChain):
+                    max_length = currentNodeLength
+                    longest_chain = currentNodeChain
+        
+        if longest_chain:
+            self.chain = longest_chain
+            return True
+        
+        return False
 
 app = Flask(__name__)
+node_address = str(uuid4()).replace('-', '')
 blockchain = Blockchain()
 
 @app.route("/mine_block", methods = ['GET'])
@@ -68,16 +106,17 @@ def mine_block():
     previous_proof = previous_block['proof']
     proof = blockchain.proof_of_work(previous_proof)
     previous_hash = blockchain.hash(previous_block)
-
+    # blockchain.add_transaction(sender = node_address, receiver = 'Ricardas', amount = 1)
     block = blockchain.create_block(proof, previous_hash)
     end_date = datetime.datetime.now()
 
     response = {
-        'message': 'Block has beem mined! :)',
+        'message': 'Block has been mined! :)',
         'index': block['index'],
         'timestamp': block['timestamp'],
         'proof': block['proof'],
         'previous_hash': block['previous_hash'],
+        'transactions': block['transactions'],
         'process_time': '{}'.format(end_date - start_time)
     }
 
@@ -99,6 +138,49 @@ def is_chain_valid():
     }
 
     return jsonify(response), 200
+
+@app.route("/add_transaction", methods = ['POST'])
+def add_transaction():
+    data = request.get_json()
+    transactions_keys = ['sender', 'receiver', 'amount']
+    if not all (key in data for key in transactions_keys):
+        return 'Bad request', 400
+    
+    index = blockchain.add_transaction(sender = data["sender"], receiver = data["receiver"], amount = data["amount"])
+    return jsonify({
+        'message': f'Transaction added to block: #{index}'
+    }), 201
+ 
+@app.route("/connect_node", methods = ['POST'])
+def connect_node():
+    data = request.get_json()
+    nodes = data.get('nodes')
+    
+    if nodes is None:
+        return "No nodes to connect", 400
+    
+    for node in nodes:
+        blockchain.add_node(node)
+
+    return jsonify({
+        'message': 'Nodes added successfully',
+        'total_nodes': list(blockchain.nodes)
+    }), 201
+
+@app.route("/replace_chain", methods = ['GET'])
+def replace_chain():
+    is_chain_replaced = blockchain.replace_chain()
+
+    if is_chain_valid:
+        return jsonify({
+            'message': 'The chain was replaced',
+            'new_chain': blockchain.chain
+        }), 200
+    
+    return jsonify({
+        'Message': 'No changes',
+        'actual_chain': blockchain.chain
+    }), 200
 
 
 app.run(host = '0.0.0.0', port = 5000)
